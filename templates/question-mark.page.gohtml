@@ -1,0 +1,62 @@
+{{template "base" .}}
+
+{{define "content"}}
+    <div class="container">
+        <div class="row">
+            <div class="d-grid col-4 mx-auto">
+                <h1 class="text-center mt-4">Whatever...</h1>
+                <button type="button" id="who-cares-btn" class="btn btn-primary mt-3 mb-4">Who cares button</button>
+            </div>
+        </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+    <script>
+        document.getElementById('who-cares-btn').addEventListener('click', function() {
+            let html = `
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 offset-md-3 align-self-center">
+                        <form id="whatever-form" action="" class="needs-validation" method="post">
+                            <div class="form-floating mb-3">
+                                <input id="field-one" aria-describedby="emailHelp" class="form-control" name="so-what" placeholder="pseudoElement@neededHere.com"
+                                       required type="email">
+                                <label for="field-one">So what</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input id="field-two" aria-describedby="passwordHelp" class="form-control" name="see-above" placeholder="pseudoElement@neededHere.com"
+                                       required type="password">
+                                <label for="field-two">See above</label>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+                `
+
+            Prompt().custom({
+                html: html,
+                title: 'Testing AJAX',
+                callback: function(result) {
+                    console.log('called');
+
+                    let form = document.getElementById('whatever-form');
+                    let formData = new FormData(form);
+                    formData.append('csrf_token', '{{.CSRFToken}}');
+
+                    fetch('/question-mark-json', {
+                        method: 'POST',
+                        body: formData,
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            console.log(data.ok);
+                            console.log(data.message);
+                        })
+                }
+            });
+        })
+    </script>
+{{end}}

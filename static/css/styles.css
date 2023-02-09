@@ -1,0 +1,8 @@
+.white-link a:link,
+.white-link a:visited {
+    color: white;
+    background-color: transparent;
+    text-decoration: underline;
+}
+
+

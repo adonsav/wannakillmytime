@@ -1,0 +1,8 @@
+create_table("bored_people") {
+    t.Column("id", "integer", {primary: true})
+    t.Column("email", "string", {})
+    t.Column("registration_id", "integer", {})
+    t.ForeignKey("registration_id", {"registrations": ["id"]}, {"on_delete": "cascade", "on_update": "cascade",})
+}
+
+add_index("bored_people", "email", {})

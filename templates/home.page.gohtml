@@ -1,11 +1,56 @@
 {{template "base" .}}
 
 {{define "content"}}
+    <div class="carousel slide" id="main-carousel">
+
+        <div class="carousel-indicators">
+            <button aria-current="true" aria-label="Slide 1" class="active" data-bs-slide-to="0"
+                    data-bs-target="#main-carousel"
+                    type="button"></button>
+            <button aria-label="Slide 2" data-bs-slide-to="1" data-bs-target="#main-carousel" type="button"></button>
+            <button aria-label="Slide 3" data-bs-slide-to="2" data-bs-target="#main-carousel" type="button"></button>
+        </div>
+
+        <div class="carousel-inner">
+            <div class="carousel-item white-link active">
+                <img alt="Bored Woman" class="d-block w-100" src="/static/images/johnny-cohen-bored-unsplash.jpg">
+                <div class="carousel-caption d-none d-md-block">
+                    <h5>Bored</h5>
+                    <p>Photo by <a href="https://unsplash.com/@jonecohen?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Johnny Cohen</a> on <a href="https://unsplash.com/s/photos/bored?orientation=landscape&utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
+                </div>
+            </div>
+            <div class="carousel-item white-link">
+                <img alt="Bored Man" class="d-block w-100" src="/static/images/tim-gouw-bored-unsplash.jpg">
+                <div class="carousel-caption d-none d-md-block">
+                    <h5>More bored than before</h5>
+                    <p>Photo by <a href="https://unsplash.com/@punttim?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Tim Gouw</a> on <a href="https://unsplash.com/s/photos/bored?orientation=landscape&utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a><p>
+                </div>
+            </div>
+            <div class="carousel-item white-link">
+                <img alt="Bored Woman" class="d-block w-100" src="/static/images/magnet-me-bored-unsplash.jpg">
+                <div class="carousel-caption d-none d-md-block">
+                    <h5>More bored than ever</h5>
+                    <p>Photo by <a href="https://unsplash.com/@magnetme?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Magnet.me</a> on <a href="https://unsplash.com/s/photos/bored?orientation=landscape&utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a></p>
+                </div>
+            </div>
+        </div>
+        <button class="carousel-control-prev" data-bs-slide="prev" data-bs-target="#main-carousel" type="button">
+            <span aria-hidden="true" class="carousel-control-prev-icon"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" data-bs-slide="next" data-bs-target="#main-carousel" type="button">
+            <span aria-hidden="true" class="carousel-control-next-icon"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
     <div class="container">
         <div class="row">
             <div class="col">
-                <h1>This is the home page</h1>
-                <p>This came from the template: {{index .StringMap "test"}}</p>
+                <h1 class="text-center mt-4">Welcome to this bored site</h1>
+                <p class="text-center">
+                    If you feel bored enough, to the point that you barely can click or tap, then welcome!
+                </p>
             </div>
         </div>
     </div>
