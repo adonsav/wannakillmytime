@@ -15,18 +15,26 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"testing"
 	"time"
 )
 
 var handlersTestAppConfig config.AppConfig
 var session *scs.SessionManager
-var pathToTemplates = "./../../templates"
+var pathToTemplates = "./../templates/gohtmltemplates"
 
-func getRoutes() http.Handler {
+// functions allows us to specify certain functions available to Go templates
+var functions = template.FuncMap{
+	"humanDate": render.HumanDate,
+}
+
+func TestMain(m *testing.M) {
 	handlersTestAppConfig.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	handlersTestAppConfig.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+	gob.Register(models.User{})
 	gob.Register(models.Registration{})
+	gob.Register(models.BoredBuddie{})
 	handlersTestAppConfig.InProduction = false
 
 	session = scs.New()
@@ -37,20 +45,29 @@ func getRoutes() http.Handler {
 
 	handlersTestAppConfig.Session = session
 
+	emailChan := make(chan models.EmailData)
+	handlersTestAppConfig.EmailChan = emailChan
+	defer close(emailChan)
+	listenForEmail()
+
 	templateCache, err := CreateTestTemplateCache()
 	if err != nil {
-		log.Fatal("Cannot crate template cache")
+		log.Fatal("Cannot create template cache")
 	}
 	handlersTestAppConfig.TemplateCache = templateCache
 	handlersTestAppConfig.UseCache = true
 
-	repo := NewRepo(&handlersTestAppConfig)
+	repo := NewTestRepo(&handlersTestAppConfig)
 	NewHandlers(repo)
 	// alternatively we can use the below in place of the two method calls
 	// above and  delete NewRepo and NewHandlers methods
 	// handlers.Repo = &handlers.Repository{handlersAppConfig: &handlersTestAppConfig}
-	render.NewTemplates(&handlersTestAppConfig)
+	render.NewRenderer(&handlersTestAppConfig)
 
+	os.Exit(m.Run())
+}
+
+func getRoutes() http.Handler {
 	mux := chi.NewRouter()
 
 	mux.Use(middleware.Recoverer)
@@ -65,12 +82,21 @@ func getRoutes() http.Handler {
 	mux.Get("/question-mark", Repo.QuestionMark)
 	mux.Post("/question-mark-json", Repo.QuestionMarkJSON)
 
+	mux.Get("/user/login", Repo.Login)
+	mux.Post("/user/login", Repo.PostLogin)
+	mux.Get("/user/logout", Repo.Logout)
+
+	mux.Get("/admin/dashboard", Repo.AdminDashboard)
+	mux.Get("/admin/registrations-active", Repo.AdminActiveRegistrations)
+	mux.Get("/admin/registrations-all", Repo.AdminAllRegistrations)
+	mux.Get("/admin/registrations/{src}/{id}", Repo.AdminShowRegistration)
+	mux.Get("/admin/deactivate-registration/{src}/{id}", Repo.AdminDeactivateRegistration)
+	mux.Post("/admin/registrations/{src}/{id}", Repo.AdminPostShowRegistration)
+
 	fileServer := http.FileServer(http.Dir("./static/"))
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
 
 	return mux
-
-	return nil
 }
 
 // noSurf adds CSRF protection to all POST requests
@@ -94,7 +120,7 @@ func SessionLoad(next http.Handler) http.Handler {
 func CreateTestTemplateCache() (map[string]*template.Template, error) {
 	myCache := map[string]*template.Template{}
 
-	// get all the files name *.page.gohtml from ./templates
+	// get all the files ending with *.page.gohtml from ./templates
 	pages, err := filepath.Glob(fmt.Sprintf("%s/*.page.gohtml", pathToTemplates))
 	if err != nil {
 		return myCache, err
@@ -103,7 +129,7 @@ func CreateTestTemplateCache() (map[string]*template.Template, error) {
 	// range through all files ending with *.page.gohtml
 	for _, page := range pages {
 		name := filepath.Base(page)
-		templateSet, err := template.New(name).ParseFiles(page)
+		templateSet, err := template.New(name).Funcs(functions).ParseFiles(page)
 		if err != nil {
 			return myCache, err
 		}
@@ -124,4 +150,14 @@ func CreateTestTemplateCache() (map[string]*template.Template, error) {
 	}
 
 	return myCache, nil
+}
+
+// listenForEmail creates a goroutine that just listens for emails in the respective channels without
+// taking further actions
+func listenForEmail() {
+	go func() {
+		for {
+			_ = <-handlersTestAppConfig.EmailChan
+		}
+	}()
 }

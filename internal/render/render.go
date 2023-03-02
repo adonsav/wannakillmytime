@@ -4,27 +4,33 @@ import (
 	"errors"
 	"fmt"
 	"github.com/adonsav/fgoapp/internal/config"
-	"github.com/adonsav/fgoapp/internal/models"
+	"github.com/adonsav/fgoapp/internal/templates"
 	"github.com/justinas/nosurf"
 	"html/template"
 	"log"
 	"net/http"
 	"path/filepath"
+	"time"
 )
 
 var renderAppConfig *config.AppConfig
-var pathToTemplates = "./templates"
+var pathToTemplates = "./internal/templates/gohtmltemplates"
 
-// NewTemplates sets the configuration for the templates
-func NewTemplates(ac *config.AppConfig) {
+// functions allows us to specify certain functions available to Go templates
+var functions = template.FuncMap{
+	"humanDate": HumanDate,
+}
+
+// NewRenderer sets the configuration for the templates
+func NewRenderer(ac *config.AppConfig) {
 	renderAppConfig = ac
 }
 
 // Template renders a template
-func Template(w http.ResponseWriter, r *http.Request, tmpl string, td *models.TemplateData) error {
+func Template(w http.ResponseWriter, r *http.Request, tmpl string, td *templates.TemplateData) error {
 	var templateCache map[string]*template.Template
 	if renderAppConfig.UseCache {
-		// get the template cache from application configuration
+		// Get the template cache from application configuration
 		templateCache = renderAppConfig.TemplateCache
 	} else {
 		templateCache, _ = CreateTemplateCache()
@@ -45,14 +51,13 @@ func Template(w http.ResponseWriter, r *http.Request, tmpl string, td *models.Te
 	}
 
 	return nil
-
 }
 
 // CreateTemplateCache creates a template cache as a map
 func CreateTemplateCache() (map[string]*template.Template, error) {
 	myCache := map[string]*template.Template{}
 
-	// get all the files name *.page.gohtml from ./templates
+	// get all the files ending with *.page.gohtml from ./templates
 	pages, err := filepath.Glob(fmt.Sprintf("%s/*.page.gohtml", pathToTemplates))
 	if err != nil {
 		return myCache, err
@@ -61,7 +66,7 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 	// range through all files ending with *.page.gohtml
 	for _, page := range pages {
 		name := filepath.Base(page)
-		templateSet, err := template.New(name).ParseFiles(page)
+		templateSet, err := template.New(name).Funcs(functions).ParseFiles(page)
 		if err != nil {
 			return myCache, err
 		}
@@ -84,10 +89,18 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 	return myCache, nil
 }
 
-func AddDefaultData(td *models.TemplateData, r *http.Request) *models.TemplateData {
+func AddDefaultData(td *templates.TemplateData, r *http.Request) *templates.TemplateData {
 	td.Flash = renderAppConfig.Session.PopString(r.Context(), "flash")
 	td.Error = renderAppConfig.Session.PopString(r.Context(), "error")
 	td.Warning = renderAppConfig.Session.PopString(r.Context(), "warning")
 	td.CSRFToken = nosurf.Token(r)
+	if renderAppConfig.Session.Exists(r.Context(), "user_id") {
+		td.IsAuthenticated = true
+	}
 	return td
+}
+
+// HumanDate returns time in YYYY-MM-DD format
+func HumanDate(t time.Time) string {
+	return t.Format("2006-01-02")
 }

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/adonsav/fgoapp/internal/models"
 	"github.com/alexedwards/scs/v2"
 	"html/template"
 	"log"
@@ -14,4 +15,5 @@ type AppConfig struct {
 	Session       *scs.SessionManager
 	InfoLog       *log.Logger
 	ErrorLog      *log.Logger
+	EmailChan     chan models.EmailData
 }

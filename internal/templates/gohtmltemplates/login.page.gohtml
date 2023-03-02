@@ -1,0 +1,37 @@
+{{template "base" .}}
+
+{{define "content"}}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3 align-self-center">
+                <h2 class="text-center mt-4 mb-4">Login</h2>
+                {{$userCredentials := index .Data "userCredentials"}}
+                <form id="login-form" action="/user/login" method="post" novalidate>
+                    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                    <div class="form-floating mb-3">
+                        <input id="email" type="email" class="form-control {{with .Form.Errors.GetFirst "email"}} is-invalid {{end}}" aria-describedby="emailHelp" name="email" value="{{$userCredentials.Email}}" placeholder="pseudoElement@neededHere.com"
+                               required>
+                        {{if .Form.Errors.GetFirst "email"}}
+                            <label for="email">{{.Form.Errors.GetFirst "email"}}</label>
+                        {{else}}
+                            <label for="email">Email</label>
+                        {{end}}
+                        <div class="form-text" id="emailHelp">Enter your boring email</div>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input id="password" type="password" class="form-control {{with .Form.Errors.GetFirst "password"}} is-invalid {{end}}" aria-describedby="passwordHelp" name="password" placeholder="pseudoElement@neededHere.com"
+                               required>
+                        {{if .Form.Errors.GetFirst "password"}}
+                            <label for="password">{{.Form.Errors.GetFirst "password"}}</label>
+                        {{else}}
+                            <label for="password">Password</label>
+                        {{end}}
+                        <div class="form-text" id="passwordHelp">Enter your password</div>
+                    </div>
+                    <hr>
+                    <button class="btn btn-primary mt-3 mb-4" type="submit">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{{end}}

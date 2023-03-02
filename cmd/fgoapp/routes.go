@@ -14,6 +14,7 @@ func routes(app *config.AppConfig) http.Handler {
 	mux.Use(middleware.Recoverer)
 	mux.Use(noSurf)
 	mux.Use(SessionLoad)
+
 	mux.Get("/", handlers.Repo.Home)
 	mux.Get("/about", handlers.Repo.About)
 
@@ -23,9 +24,21 @@ func routes(app *config.AppConfig) http.Handler {
 
 	mux.Get("/question-mark", handlers.Repo.QuestionMark)
 	mux.Post("/question-mark-json", handlers.Repo.QuestionMarkJSON)
+	mux.Get("/user/login", handlers.Repo.Login)
+	mux.Post("/user/login", handlers.Repo.PostLogin)
+	mux.Get("/user/logout", handlers.Repo.Logout)
 
 	fileServer := http.FileServer(http.Dir("./static/"))
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
 
+	mux.Route("/admin", func(mux chi.Router) {
+		//mux.Use(Auth)
+		mux.Get("/dashboard", handlers.Repo.AdminDashboard)
+		mux.Get("/registrations-active", handlers.Repo.AdminActiveRegistrations)
+		mux.Get("/registrations-all", handlers.Repo.AdminAllRegistrations)
+		mux.Get("/registrations/{src}/{id}", handlers.Repo.AdminShowRegistration)
+		mux.Get("/deactivate-registration/{src}/{id}", handlers.Repo.AdminDeactivateRegistration)
+		mux.Post("/registrations/{src}/{id}", handlers.Repo.AdminPostShowRegistration)
+	})
 	return mux
 }

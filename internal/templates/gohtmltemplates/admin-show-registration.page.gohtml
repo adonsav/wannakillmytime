@@ -1,0 +1,57 @@
+{{template "admin" .}}
+
+{{define "page-title"}}
+    <h3>Registration</h3>
+{{end}}
+
+{{define "content"}}
+    {{$registration := index .Data "registration"}}
+    {{$src := index .StringMap "src"}}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3 align-self-center">
+                <p><strong>User ID: {{$registration.ID}}</strong></p>
+                <form id="registration-form" action="/admin/registrations/{{$src}}/{{$registration.ID}}" method="post" novalidate>
+                    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                    <div class="form-floating mb-3">
+                        <input id="user-name" type="text" class="form-control" aria-describedby="userNameHelp" name="user-name" value="{{$registration.UserName}}" placeholder="pseudoElement@neededHere.com"
+                            required>
+                        <label for="user-name">User name</label>
+                        <div class="form-text" id="userNameHelp"></div>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input id="email" type="email" class="form-control" aria-describedby="emailHelp" name="email" value="{{$registration.Email}}" placeholder="pseudoElement@neededHere.com"
+                            required>
+                        <label for="user-name">Email</label>
+                        <div class="form-text" id="emailHelp"></div>
+                    </div>
+                    <div class="float-start">
+                        <button class="btn btn-primary" type="submit">Save</button>
+                        <a href="/admin/registrations-{{$src}}" class="btn btn-warning">Cancel</a>
+                    </div>
+                    <div class="float-end">
+                        <a href="#" class="btn btn-danger" onclick="deactivateRegistration({{$registration.ID}})">Deactivate</a>
+                    </div>
+                    <div class="clearfix"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+    {{$src := index .StringMap "src"}}
+    <script>
+        function deactivateRegistration(id) {
+            Prompt().custom({
+                title: 'Deactivate Account?',
+                icon: 'warning',
+                callback: function(result) {
+                    if (result !== false) {
+                        window.location.href = "/admin/deactivate-registration/{{$src}}/" + id;
+                    }
+                }
+            })
+        }
+    </script>
+{{end}}

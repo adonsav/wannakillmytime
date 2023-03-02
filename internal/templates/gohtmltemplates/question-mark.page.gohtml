@@ -1,0 +1,85 @@
+{{template "base" .}}
+
+{{define "content"}}
+    <div class="container">
+        <div class="row">
+            <div class="d-grid col-4 mx-auto">
+                <h1 class="text-center mt-4">Whatever...</h1>
+                <button type="button" id="who-cares-btn" class="btn btn-primary mt-3 mb-4">Who cares button</button>
+            </div>
+        </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+    <script>
+        document.getElementById('who-cares-btn').addEventListener('click', function() {
+            let html = `
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 offset-md-3 align-self-center">
+                        <form id="whatever-form" action="" class="needs-validation" method="post">
+                            <div class="form-floating mb-3">
+                                <input id="field-one" aria-describedby="emailHelp" class="form-control" name="so-what" placeholder="pseudoElement@neededHere.com"
+                                       required type="email">
+                                <label for="field-one">Whatever</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input id="field-two" aria-describedby="passwordHelp" class="form-control" name="see-above" placeholder="pseudoElement@neededHere.com"
+                                       required type="password">
+                                <label for="field-two">Whatever 2</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="hidden" id="ajax" name="testingAJAX">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+                `
+
+            Prompt().custom({
+                html: html,
+                title: 'Surprise!',
+                callback: function() {
+                    console.log('Callback called');
+
+                    let form = document.getElementById('whatever-form');
+                    let formData = new FormData(form);
+                    formData.append('csrf_token', '{{.CSRFToken}}');
+
+                    fetch('/question-mark-json', {
+                        method: 'POST',
+                        body: formData,
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            if (!data.so_what || !data.see_above) {
+                                Prompt().custom({
+                                    icon: 'warning',
+                                    html: '<p>Glad you skipped those fields!</p>',
+                                })
+                            } else {
+                                Prompt().custom({
+                                    icon: 'success',
+                                    html: '<p>Yeaaaaah!<br> You\'ve just typed '
+                                        + "'" + data.so_what + "'"
+                                        + ' and '
+                                        + "'" + data.see_above + "'"
+                                        + ' without any reason. I\'m just checking AJAX.</p>',
+                                })
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            Prompt().error({
+                                title: "Ooops",
+                                footer: '<p>' + error +'</p>',
+                            })
+                        })
+                }
+            });
+        })
+    </script>
+{{end}}

@@ -1,13 +1,13 @@
 package render
 
 import (
-	"github.com/adonsav/fgoapp/internal/models"
+	"github.com/adonsav/fgoapp/internal/templates"
 	"net/http"
 	"testing"
 )
 
 func TestAddDefaultData(t *testing.T) {
-	var td models.TemplateData
+	var td templates.TemplateData
 	request, err := getSession()
 	if err != nil {
 		t.Error(err)
@@ -21,7 +21,7 @@ func TestAddDefaultData(t *testing.T) {
 }
 
 func TestTemplate(t *testing.T) {
-	pathToTemplates = "./../../templates"
+	pathToTemplates = "./internal/templates/gohtmltemplates"
 	tc, err := CreateTemplateCache()
 	if err != nil {
 		t.Error(err)
@@ -34,23 +34,23 @@ func TestTemplate(t *testing.T) {
 	}
 
 	var mhw myHttpWriter
-	err = Template(&mhw, request, "home.page.gohtml", &models.TemplateData{})
+	err = Template(&mhw, request, "home.page.gohtml", &templates.TemplateData{})
 	if err != nil {
 		t.Error("error writing template to browser")
 	}
 
-	err = Template(&mhw, request, "non-existent.page.gohtml", &models.TemplateData{})
+	err = Template(&mhw, request, "non-existent.page.gohtml", &templates.TemplateData{})
 	if err == nil {
 		t.Error("rendered template that does not exist")
 	}
 }
 
 func TestNewTemplates(t *testing.T) {
-	NewTemplates(renderAppConfig)
+	NewRenderer(renderAppConfig)
 }
 
 func TestCreateTemplateCache(t *testing.T) {
-	pathToTemplates = "./../../templates"
+	pathToTemplates = "./../templates/gohtmltemplates"
 	_, err := CreateTemplateCache()
 	if err != nil {
 		t.Error(err)
