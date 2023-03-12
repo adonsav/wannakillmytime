@@ -12,6 +12,7 @@ import (
 	"github.com/adonsav/fgoapp/internal/repository"
 	"github.com/adonsav/fgoapp/internal/templates"
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 	"strconv"
@@ -85,6 +86,15 @@ func (hr *Repository) PostRegistration(w http.ResponseWriter, r *http.Request) {
 		Email:    r.Form.Get("email"),
 		Password: r.Form.Get("password"),
 	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(registration.Password), bcrypt.DefaultCost)
+	if err != nil {
+		hr.handlersAppConfig.Session.Put(r.Context(), "error", "can't create hash from password")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	registration.Password = string(hashedPassword)
 
 	form := forms.New(r.PostForm)
 	form.Required("user-name", "email", "password")
